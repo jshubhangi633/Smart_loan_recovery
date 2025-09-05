@@ -65,3 +65,26 @@ fig.update_layout(
 fig.show()
 ```
 
+![Loan Amount Distribution and Relationship with Money Income](./newplotloan.png)
+
+
+### The visualization shows a clear positive correlation between monthly income and loan amount, suggesting that individuals with higher earnings typically obtain larger loans. The density curve at the top illustrates the spread of loan amounts, reinforcing that higher loan sizes are more common among higher-income groups. This pattern reflects the proportional link between income and loan size, indicating that loan approvals or customer profiling may be influenced by income levels.
+
+
+### Analyzing Payment History
+```py
+fig = px.histogram(df, x="Payment_History", color="Recovery_Status", barmode="group",
+                   title="How Payment History Affects Loan Recovery Status",
+                   labels={"Payment_History": "Payment History", "count": "Number of Loans"},
+                   color_discrete_map={"Recovered": "green", "Not Recovered": "red"})
+
+fig.update_layout(
+    xaxis_title="Payment History",
+    yaxis_title="Number of Loans",
+    legend_title="Recovery Status",
+    template="plotly_white",
+        )
+
+fig.show()
+```
+
