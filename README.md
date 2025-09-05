@@ -1,25 +1,25 @@
 # Smart loan recovery
 ## The dataset for this project contains critical attributes such as:
-## 1. Demographic Information: Age, employment type, income level, and number of dependents.
-## 2. Loan Details: Loan amount, tenure, interest rate, and collateral value.
-## 3. Repayment History: Number of missed payments, days past due, and monthly EMI payments.
-## 4. Collection Efforts: Collection methods used, number of recovery attempts, and legal actions taken.
-## 5. Loan Recovery Status: Whether the loan was fully recovered, partially recovered, or remains outstanding.
+### 1. Demographic Information: Age, employment type, income level, and number of dependents.
+### 2. Loan Details: Loan amount, tenure, interest rate, and collateral value.
+### 3. Repayment History: Number of missed payments, days past due, and monthly EMI payments.
+### 4. Collection Efforts: Collection methods used, number of recovery attempts, and legal actions taken.
+### 5. Loan Recovery Status: Whether the loan was fully recovered, partially recovered, or remains outstanding.
 
  ### [Link to the dataset](https://amanxai.com/wp-content/uploads/2025/02/loan-recovery.csv)
 
 
-### Importing the dataset
+## 1. Importing the dataset
 ```py
 import pandas as pd
 df = pd.read_csv("/content/loan recovery.csv")
 print(df.head())
 ```
-### Let’s have a look at the summary statistics of the data
+## 2. Let’s have a look at the summary statistics of the data
 ```py
 df.describe()
 ```
-### Analyzing Data Distribution and Relationships
+## 3. Analyzing Data Distribution and Relationships
 ```py
 import plotly.graph_objects as go
 import plotly.express as px
@@ -71,7 +71,7 @@ fig.show()
 ### The visualization shows a clear positive correlation between monthly income and loan amount, suggesting that individuals with higher earnings typically obtain larger loans. The density curve at the top illustrates the spread of loan amounts, reinforcing that higher loan sizes are more common among higher-income groups. This pattern reflects the proportional link between income and loan size, indicating that loan approvals or customer profiling may be influenced by income levels.
 
 
-### Analyzing Payment History
+## 4. Analyzing Payment History
 ```py
 fig = px.histogram(df, x="Payment_History", color="Recovery_Status", barmode="group",
                    title="How Payment History Affects Loan Recovery Status",
@@ -88,3 +88,166 @@ fig.update_layout(
 fig.show()
 ```
 
+![Payment History](./paymenthistory.png)
+
+### Loans that are paid on time are generally recovered in full. In cases of delayed payments, recoveries vary between full, partial, and occasional write-offs. However, when payments are completely missed, the recovery rate drops sharply, with the majority of such loans being only partially recovered or written off entirely.
+
+## 5. How Missed payments affect loan recovery status 
+
+```py 
+fig = px.box(df, x="Recovery_Status", y="Num_Missed_Payments",
+             title="How Missed Payments Affect Loan Recovery Status",
+             labels={"Recovery_Status": "Recovery Status", "Num_Missed_Payments": "Number of Missed Payments"},
+             color="Recovery_Status",
+             color_discrete_map={"Recovered": "green", "Not Recovered": "red"},
+             points="all")
+
+fig.update_layout(
+    xaxis_title="Recovery Status",
+    yaxis_title="Number of Missed Payments",
+    template="plotly_white"
+)
+
+fig.show()
+```
+
+![Payment History](./missedpayments.png)
+### Loans that are only partially recovered usually correspond to borrowers with up to four missed payments. Fully recovered loans are more often linked to fewer missed payments, typically between zero and two. In contrast, written-off loans are associated with a much higher number of missed payments, with many cases exceeding six. Overall, as missed payments increase, the probability of full recovery declines sharply, while the likelihood of write-offs rises significantly.
+
+
+## 6. Analyzing Loan Recovery Based on Monthly Income
+
+```py
+fig = px.scatter(df, x='Monthly_Income', y='Loan_Amount',
+                 color='Recovery_Status', size='Loan_Amount',
+                 hover_data={'Monthly_Income': True, 'Loan_Amount': True, 'Recovery_Status': True},
+                 title="How Monthly Income and Loan Amount Affect Loan Recovery",
+                 labels={"Monthly_Income": "Monthly Income ($)", "Loan_Amount": "Loan Amount ($)"},
+                 color_discrete_map={"Recovered": "green", "Not Recovered": "red"})
+
+fig.add_annotation(
+    x=max(df['Monthly_Income']), y=max(df['Loan_Amount']),
+    text="Higher loans may still get recovered if income is high",
+    showarrow=True,
+    arrowhead=2,
+    font=dict(size=12, color="red")
+)
+
+fig.update_layout(
+    xaxis_title="Monthly Income ($)",
+    yaxis_title="Loan Amount ($)",
+    template="plotly_white"
+)
+
+fig.show()
+```
+
+![Payment History](./monthlyincome.png)
+
+### Individuals with higher incomes are more likely to achieve full loan recovery, even when borrowing larger amounts. In contrast, borrowers from lower income groups face a greater risk of partial recovery or loan write-offs. This pattern underscores the role of income in repayment outcomes, where higher earnings are linked to stronger repayment capacity and fewer defaults.
+
+## Using K-Means clustering to create borrower segments based on monthly income and loan amount:
+```py
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+features = ['Age', 'Monthly_Income', 'Loan_Amount', 'Loan_Tenure', 'Interest_Rate',
+            'Collateral_Value', 'Outstanding_Loan_Amount', 'Monthly_EMI', 'Num_Missed_Payments', 'Days_Past_Due']
+
+scaler = StandardScaler()
+df_scaled = scaler.fit_transform(df[features])
+```
+```py
+optimal_k = 4
+kmeans = KMeans(n_clusters=optimal_k, random_state=42, n_init=10)
+df['Borrower_Segment'] = kmeans.fit_predict(df_scaled)
+
+fig = px.scatter(df, x='Monthly_Income', y='Loan_Amount',
+                 color=df['Borrower_Segment'].astype(str), size='Loan_Amount',
+                 hover_data={'Monthly_Income': True, 'Loan_Amount': True, 'Borrower_Segment': True},
+                 title="Borrower Segments Based on Monthly Income and Loan Amount",
+                 labels={"Monthly_Income": "Monthly Income ($)", "Loan_Amount": "Loan Amount ($)", "Borrower_Segment": "Segment"},
+                 color_discrete_sequence=px.colors.qualitative.Vivid)
+
+fig.add_annotation(
+    x=df['Monthly_Income'].mean(), y=df['Loan_Amount'].max(),
+    text="Higher loans are clustered in specific income groups",
+    showarrow=True,
+    arrowhead=2,
+    font=dict(size=12, color="red")
+)
+
+fig.update_layout(
+    xaxis_title="Monthly Income ($)",
+    yaxis_title="Loan Amount ($)",
+    template="plotly_white",
+    legend_title="Borrower Segment"
+)
+
+fig.show()
+```
+
+![Payment History](./borrowersegment.png)
+
+### Borrowers in Segment 1 take on moderate to high loan amounts, suggesting relative financial stability. Segment 0 is concentrated among lower-income levels with moderate loan sizes, pointing to potential financial stress. Segment 2 is more evenly distributed, representing a balanced yet cautious borrower group. In contrast, Segment 3 is concentrated in high-loan, high-income ranges, signaling greater vulnerability to default despite higher earning capacity.
+
+## Updating segment names
+```py
+df['Segment_Name'] = df['Borrower_Segment'].map({
+    0: 'Moderate Income, High Loan Burden',
+    1: 'High Income, Low Default Risk',
+    2: 'Moderate Income, Medium Risk',
+    3: 'High Loan, Higher Default Risk'
+})
+```
+## Building an Early Detection System for Loan Defaults based on the Risk Scores
+```py
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
+df['High_Risk_Flag'] = df['Segment_Name'].apply(lambda x: 1 if x in ['High Loan, Higher Default Risk', 'Moderate Income, High Loan Burden'] else 0)
+
+# selecting features for the model
+features = ['Age', 'Monthly_Income', 'Loan_Amount', 'Loan_Tenure', 'Interest_Rate',
+            'Collateral_Value', 'Outstanding_Loan_Amount', 'Monthly_EMI', 'Num_Missed_Payments', 'Days_Past_Due']
+X = df[features]
+y = df['High_Risk_Flag']
+
+# splitting the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+
+# training the model
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+
+# get risk scores (probability of being high risk)
+risk_scores = rf_model.predict_proba(X_test)[:, 1]  # probability of high risk
+
+# add risk scores and flags to test data
+df_test = X_test.copy()
+df_test['Risk_Score'] = risk_scores
+df_test['Predicted_High_Risk'] = (df_test['Risk_Score'] > 0.5).astype(int)  # Threshold at 50% probability
+
+# merging with borrower details
+df_test = df_test.merge(df[['Borrower_ID', 'Segment_Name', 'Recovery_Status', 'Collection_Method', 'Collection_Attempts', 'Legal_Action_Taken']],
+                        left_index=True, right_index=True)
+```
+
+### We began by tagging borrowers as high-risk according to their segment classification. Next, a set of key financial and behavioral variables was selected to train a Random Forest Classifier. The dataset was divided into training and testing subsets, and the model was trained to estimate the probability of borrower default. Using the test data, we generated risk scores and categorized borrowers as either high-risk or low-risk based on a chosen probability cutoff. Finally, these predictions were combined with borrower profiles to support data-driven recovery strategies.
+
+##  Dynamic recovery strategy based on Risk Scores
+```py
+# creating a new column for the dynamic recovery strategy based on risk scores
+def assign_recovery_strategy(risk_score):
+    if risk_score > 0.75:
+        return "Immediate legal notices & aggressive recovery attempts"
+    elif 0.50 <= risk_score <= 0.75:
+        return "Settlement offers & repayment plans"
+    else:
+        return "Automated reminders & monitoring"
+
+df_test['Recovery_Strategy'] = df_test['Risk_Score'].apply(assign_recovery_strategy)
+
+df_test.head()
+```
