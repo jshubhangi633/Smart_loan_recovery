@@ -251,3 +251,98 @@ df_test['Recovery_Strategy'] = df_test['Risk_Score'].apply(assign_recovery_strat
 
 df_test.head()
 ```
+
+## XGBoost Model Performance
+
+```py
+import xgboost as xgb
+xgb_model = xgb.XGBClassifier(n_estimators=100, random_state=42)
+xgb_model.fit(X_train, y_train)
+xgb_accuracy = accuracy_score(y_test, xgb_model.predict(X_test))
+print("Random Forest Accuracy:", accuracy)
+print("XGBoost Accuracy:", xgb_accuracy)
+```
+### Random Forest Accuracy: 0.92
+### XGBoost Accuracy: 0.94
+
+
+```py
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+# Predict class labels
+y_pred = xgb_model.predict(X_test)
+
+# Predict probabilities for ROC-AUC and threshold-based metrics
+y_prob = xgb_model.predict_proba(X_test)[:, 1]
+
+# Calculate metrics
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+roc_auc = roc_auc_score(y_test, y_prob)
+
+print(f"Accuracy: {accuracy:.4f}")
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1:.4f}")
+print(f"ROC-AUC: {roc_auc:.4f}")
+
+```
+
+### Evaluation Metrics
+### Accuracy: 94.0%
+### Precision: 98.3%
+### Recall: 91.9%
+### F1-Score: 95.0%
+### ROC-AUC: 0.994
+### These results show that the XGBoost classifier is highly effective at distinguishing between high-risk and low-risk borrowers, with particularly strong precision (minimizing false positives) and a near-perfect ROC-AUC score.
+
+
+
+## ROC Curve Analysis
+```py 
+import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
+
+# Get false positive rate, true positive rate
+fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(6,6))
+plt.plot(fpr, tpr, color='blue', lw=2, label=f'ROC curve (AUC = {roc_auc:.3f})')
+plt.plot([0, 1], [0, 1], color='gray', linestyle='--')  # random guess line
+plt.xlabel("False Positive Rate")
+plt.ylabel("True Positive Rate")
+plt.title("XGBoost ROC Curve")
+plt.legend(loc="lower right")
+plt.show()
+```
+
+### The ROC curve illustrates the trade-off between the True Positive Rate and the False Positive Rate across different classification thresholds.
+### The curve is very close to the top-left corner, indicating excellent model performance.
+### An AUC (Area Under Curve) of 0.994 suggests near-perfect discrimination, meaning the model is highly reliable in predicting loan default risk.
+### Compared to the Random Forest model (92% accuracy), XGBoost achieves higher accuracy and a superior balance between recall and precision, making it better suited for borrower risk classification.
+
+![Payment History](./XgboostROC.png)
+
+
+## Precision-Recall Curve for XGBoost 
+```py
+import matplotlib.pyplot as plt
+from sklearn.metrics import precision_recall_curve, average_precision_score
+
+precision, recall, thresholds = precision_recall_curve(y_test, y_proba)
+ap_score = average_precision_score(y_test, y_proba)
+
+plt.figure(figsize=(6,5))
+plt.plot(recall, precision, marker='.', label=f'XGBoost (AP={ap_score:.3f})')
+plt.xlabel('Recall')
+plt.ylabel('Precision')
+plt.title('Precision-Recall Curve')
+plt.legend()
+plt.grid()
+plt.show()
+```
+
+![Payment History](./Precisionrecall .png)
