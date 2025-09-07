@@ -1,4 +1,6 @@
 # Smart loan recovery
+
+
 ## The dataset for this project contains critical attributes such as:
 ### 1. Demographic Information: Age, employment type, income level, and number of dependents.
 ### 2. Loan Details: Loan amount, tenure, interest rate, and collateral value.
