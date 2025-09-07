@@ -345,4 +345,22 @@ plt.grid()
 plt.show()
 ```
 
-![Payment History](./Precisionrecall .png)
+![Payment History](./precissionrecall.png)
+
+
+### The curve stays close to 1.0 precision across most recall values, meaning the model rarely misclassifies low-risk borrowers as high-risk. The Average Precision (AP) score = 0.996, indicating near-perfect classification capability. This demonstrates that the XGBoost model is highly effective for imbalanced loan default prediction, where correctly identifying high-risk borrowers is critical.
+
+## Random Forest vs. XGBoost
+### Random Forest
+### Achieved 92% accuracy, with balanced precision and recall.
+### Performs reliably and is less sensitive to parameter tuning.
+### A good choice when you need a quick, interpretable, and stable model with less risk of overfitting.
+
+## XGBoost
+###  Delivered 94% accuracy, higher precision (0.98), and a near-perfect ROC-AUC (0.994) and AP (0.996).
+### Excels in detecting high-risk borrowers while minimizing false positives.
+### Works best when you need a high-performance model for complex datasets and can afford additional computation and tuning effort.
+
+## When to Use Which
+## Use Random Forest if you want a simpler, easier-to-train model that still gives strong results without heavy tuning.
+## Use XGBoost when predictive performance is critical, especially for imbalanced problems like loan defaults, where correctly identifying high-risk borrowers is more important than training speed.
