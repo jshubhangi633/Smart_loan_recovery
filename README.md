@@ -2,7 +2,7 @@
  This project focuses on predicting loan defaults and optimizing recovery strategies using machine learning. We analyze borrower profiles, identify high-risk segments, and build predictive models to estimate default probabilities. The goal is to support data-driven decision-making in loan recovery by combining statistical analysis, clustering, and classification models.
 
 
-## The dataset for this project contains critical attributes such as:
+## The dataset for this project contains critical attributes such as: 
 ### 1. Demographic Information: Age, employment type, income level, and number of dependents.
 ### 2. Loan Details: Loan amount, tenure, interest rate, and collateral value.
 ### 3. Repayment History: Number of missed payments, days past due, and monthly EMI payments.
